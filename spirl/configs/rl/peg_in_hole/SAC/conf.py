@@ -1,0 +1,1 @@
+from spirl.configs.rl.peg_in_hole.base_conf import *
