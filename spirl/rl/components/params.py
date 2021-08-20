@@ -21,7 +21,7 @@ def get_args():
     # Misc
     parser.add_argument('--seed', default=-1, type=int,
                         help='overrides config/default seed for more convenient seed setting.')
-    parser.add_argument('--gpu', default=-1, type=int,
+    parser.add_argument('--gpu', default=0, type=int,
                         help='will set CUDA_VISIBLE_DEVICES to selected value')
     parser.add_argument('--strict_weight_loading', default=True, type=int,
                         help='if True, uses strict weight loading function')

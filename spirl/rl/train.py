@@ -153,7 +153,7 @@ class RLTrainer:
             with torch.no_grad():
                 with timing("Eval rollout time: "):
                     for _ in range(WandBLogger.N_LOGGED_SAMPLES):   # for efficiency instead of self.args.n_val_samples
-                        val_rollout_storage.append(self.sampler.sample_episode(is_train=False, render=True))
+                        val_rollout_storage.append(self.sampler.sample_episode(is_train=False, render=False))
 
         rollout_stats = val_rollout_storage.rollout_stats()
         if self.is_chef:

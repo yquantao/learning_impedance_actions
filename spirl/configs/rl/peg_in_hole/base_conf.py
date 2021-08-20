@@ -5,24 +5,24 @@ from spirl.rl.agents.ac_agent import SACAgent
 from spirl.rl.policies.mlp_policies import MLPPolicy
 from spirl.rl.components.critic import MLPCritic
 from spirl.rl.components.replay_buffer import UniformReplayBuffer
-from spirl.rl.envs.kitchen import KitchenEnv
+from spirl.rl.envs.peg_in_hole import PegInHoleEnv
 from spirl.rl.components.normalization import Normalizer
-from spirl.configs.default_data_configs.kitchen import data_spec
+from spirl.configs.default_data_configs.peg_in_hole import data_spec
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-notes = 'non-hierarchical RL experiments in kitchen env'
+notes = 'non-hierarchical RL experiments in peg-in-hole env'
 
 configuration = {
     'seed': 42,
     'agent': SACAgent,
-    'environment': KitchenEnv,
+    'environment': PegInHoleEnv,
     'data_dir': '.',
     'num_epochs': 100,
     'max_rollout_len': 280,
     'n_steps_per_epoch': 50000,
-    'n_warmup_steps': 5e3,
+    'n_warmup_steps': 500,
 }
 configuration = AttrDict(configuration)
 

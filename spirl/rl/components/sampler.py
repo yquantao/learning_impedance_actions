@@ -115,7 +115,7 @@ class Sampler:
         if global_step is not None and self._logger is not None:    # logger is none in non-master threads
             self._logger.log_scalar_dict(self.get_episode_info(),
                                          prefix='train' if self._agent._is_train else 'val',
-                                         step=global_step)
+                                         step=None)#global_step)
         self._episode_step, self._episode_reward = 0, 0.
         self._obs = self._postprocess_obs(self._reset_env())
         self._agent.reset()

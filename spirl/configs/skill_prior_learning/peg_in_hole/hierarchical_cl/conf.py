@@ -3,7 +3,7 @@ import os
 from spirl.models.closed_loop_spirl_mdl import ClSPiRLMdl
 from spirl.components.logger import Logger
 from spirl.utils.general_utils import AttrDict
-from spirl.configs.default_data_configs.kitchen import data_spec
+from spirl.configs.default_data_configs.peg_in_hole import data_spec
 from spirl.components.evaluator import TopOfNSequenceEvaluator
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
