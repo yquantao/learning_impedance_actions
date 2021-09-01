@@ -66,7 +66,6 @@ class ModelTrainer(BaseTrainer):
         if args.resume or conf.ckpt_path is not None:
             start_epoch = self.resume(args.resume, conf.ckpt_path)
 
-        print("++++++self._hp:", self._hp)
         if args.val_sweep:
             self.run_val_sweep()
         elif args.train:
@@ -186,6 +185,10 @@ class ModelTrainer(BaseTrainer):
                     # run non-val-mode model (inference) to check overfitting
                     output = self.model_test(inputs)
                     losses = self.model_test.loss(output, inputs)
+
+                    # plot trajectory to analyze latent space
+                    #self.logger.visualize(output, inputs, losses_meter.avg, self.global_step, 'val', self.logger)
+                    #self.logger.plot_trajectory(inputs, output)
 
                     losses_meter.update(losses)
                     del losses

@@ -66,7 +66,7 @@ class PegInHoleSequenceSplitDataset(Dataset):
             self.end = self.n_seqs
 
     def get_dataset(self):
-        dataset_df = pd.read_csv('./spirl/data/peg_in_hole/src/peg_in_hole_dataset.csv', header=None)
+        dataset_df = pd.read_csv('~/Workspaces/rl_ws/spirl/data/peg_in_hole/peg_in_hole_dataset.csv', header=None)
         dataset = {"observations": dataset_df.iloc[:,0:19].values.astype(np.float32),
                 "actions": dataset_df.iloc[:,19:27].values.astype(np.float32),
                 "rewards": dataset_df.iloc[:,27].values.astype(np.float32),

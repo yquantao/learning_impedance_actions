@@ -456,3 +456,34 @@ class SkillSpaceLogger(Logger):
             [self._draw_gaussian(ax, component.tensor(), color, ten2ar(weight)) for weight, component in prior]
         else:
             self._draw_gaussian(ax, prior.tensor(), color)
+
+    def plot_trajectory(self, inputs, output):
+        actions = inputs['actions'].cpu().detach().numpy()
+        reconstruction = output['reconstruction'].cpu().detach().numpy()
+        num_traj = actions.shape[0]
+
+        for i in range(num_traj):
+            # plot input
+            ax = plt.axes(projection='3d')
+            x = actions[i,:,0]
+            y = actions[i,:,1]
+            z = actions[i,:,2]
+            ax.plot3D(x, y, z, 'gray')
+            ax.scatter3D(x, y, z)
+
+            # plot reconstruction
+            x_rec = reconstruction[i,:,0]
+            y_rec = reconstruction[i,:,1]
+            z_rec = reconstruction[i,:,2]
+            ax.plot3D(x_rec, y_rec, z_rec, 'red')
+            ax.scatter3D(x_rec, y_rec, z_rec)
+
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_zlabel('z')
+            ax.set_ylim([0, 0.5])
+            ax.set_ylim([0, 0.5])
+            ax.set_ylim([-0.1, 0.5])
+            plt.savefig('fig/'+str(i)+'.png')
+
+        pass
