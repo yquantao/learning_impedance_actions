@@ -115,6 +115,7 @@ class SkillPriorMdl(BaseModel, ProbabilisticModel):
             output.p = output.q_hat     # use output of learned skill prior for sampling
 
         # sample latent variable
+        #print("self._sample_prior: ", self._sample_prior)
         output.z = output.p.sample() if self._sample_prior else output.q.sample()
         output.z_q = output.z.clone() if not self._sample_prior else output.q.sample()   # for loss computation
 
@@ -481,9 +482,9 @@ class SkillSpaceLogger(Logger):
             ax.set_xlabel('x')
             ax.set_ylabel('y')
             ax.set_zlabel('z')
-            ax.set_ylim([0, 0.5])
-            ax.set_ylim([0, 0.5])
-            ax.set_ylim([-0.1, 0.5])
+            ax.set_xlim([0.15, 0.18])
+            ax.set_ylim([0.28, 0.32])
+            ax.set_zlim([0, 0.15])
             plt.savefig('fig/'+str(i)+'.png')
 
         pass

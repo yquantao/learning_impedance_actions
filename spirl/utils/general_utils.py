@@ -65,7 +65,9 @@ class AttrDict(dict):
         try:
             return self.__getitem__(attr)
         except KeyError:
-            raise AttributeError("Attribute %r not found" % attr)
+            return None
+            #debug error here, terminal works!!!
+            #raise AttributeError("Attribute %r not found" % attr)
 
     def __getstate__(self):
         return self

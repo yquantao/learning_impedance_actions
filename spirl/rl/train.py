@@ -15,7 +15,7 @@ from spirl.rl.utils.rollout_utils import RolloutSaver
 from spirl.rl.components.sampler import Sampler
 from spirl.rl.components.replay_buffer import RolloutStorage
 
-WANDB_PROJECT_NAME = 'SPiRL'
+WANDB_PROJECT_NAME = 'SPiRL200_square_large_angle1'
 WANDB_ENTITY_NAME = 'yquantao'
 
 
@@ -61,9 +61,12 @@ class RLTrainer:
         self.conf.agent.num_workers = self.conf.mpi.num_workers
         self.agent = self._hp.agent(self.conf.agent)
         self.agent.to(self.device)
+        # add a prior agent
+        self.agent_prior = self._hp.agent(self.conf.agent)
+        self.agent_prior.to(self.device)
 
         # build sampler
-        self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.logger, self._hp.max_rollout_len)
+        self.sampler = self._hp.sampler(self.conf.sampler, self.env, self.agent, self.agent_prior, self.logger, self._hp.max_rollout_len)
 
         # load from checkpoint
         self.global_step, self.n_update_steps, start_epoch = 0, 0, 0
@@ -308,6 +311,8 @@ class RLTrainer:
 
 
 if __name__ == '__main__':
+    import sys
+    print(sys.path)
     RLTrainer(args=get_args())
 
 

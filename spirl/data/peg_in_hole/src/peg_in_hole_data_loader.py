@@ -6,7 +6,7 @@ import pandas as pd
 
 from spirl.components.data_loader import Dataset
 from spirl.utils.general_utils import AttrDict
-
+from spirl.plotter.plotter import plot_action
 
 class PegInHoleSequenceSplitDataset(Dataset):
     SPLIT = AttrDict(train=0.99, val=0.01, test=0.0)
@@ -39,6 +39,9 @@ class PegInHoleSequenceSplitDataset(Dataset):
             ))
             start = end_idx+1
 
+        # plot actions
+        #plot_action(self.seqs)
+
         # 0-pad sequences for skill-conditioned training
         if 'pad_n_steps' in self.spec and self.spec.pad_n_steps > 0:
             for seq in self.seqs:
@@ -68,7 +71,9 @@ class PegInHoleSequenceSplitDataset(Dataset):
     def get_dataset(self):
         dataset_df = pd.read_csv('~/Workspaces/rl_ws/spirl/data/peg_in_hole/peg_in_hole_dataset.csv', header=None)
         dataset = {"observations": dataset_df.iloc[:,0:19].values.astype(np.float32),
-                "actions": dataset_df.iloc[:,19:27].values.astype(np.float32),
+                "actions": np.concatenate((dataset_df.iloc[:,19:23].values.astype(np.float32),
+                                           dataset_df.iloc[:,23:26].values.astype(np.float32)/1000.0,
+                                           dataset_df.iloc[:,26:27].values.astype(np.float32)/100.0), axis=1),
                 "rewards": dataset_df.iloc[:,27].values.astype(np.float32),
                 "terminals": dataset_df.iloc[:,28].values.astype(np.float32)}
         return dataset

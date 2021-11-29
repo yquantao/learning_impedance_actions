@@ -12,13 +12,13 @@ def get_args():
                         help="if True, nothing is saved to disk. Note: this doesn't work")  # TODO this doesn't work
 
     # Running protocol
-    parser.add_argument('--resume', default='', type=str, metavar='PATH',
+    parser.add_argument('--resume', default='latest', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
     parser.add_argument('--train', default=True, type=int,
                         help='if False, will run one validation epoch')
     parser.add_argument('--test_prediction', default=True, type=int,
                         help="if False, prediction isn't run at validation time")
-    parser.add_argument('--skip_first_val', default=False, type=int,
+    parser.add_argument('--skip_first_val', default=True, type=int,
                         help='if True, will skip the first validation epoch')
     parser.add_argument('--val_sweep', default=False, type=int,
                         help='if True, runs validation on all existing model checkpoints')

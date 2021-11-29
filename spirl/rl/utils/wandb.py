@@ -3,7 +3,7 @@ import inspect
 import numpy as np
 
 from spirl.utils.general_utils import flatten_dict, prefix_dict
-
+import csv
 
 class WandBLogger:
     """Logs to WandB."""
@@ -34,7 +34,16 @@ class WandBLogger:
     def log_scalar_dict(self, d, prefix='', step=None):
         """Logs all entries from a dict of scalars. Optionally can prefix all keys in dict before logging."""
         if prefix: d = prefix_dict(d, prefix + '_')
-        wandb.log(d) if step is None else wandb.log(d, step=step)
+        #wandb.log(d) if step is None else wandb.log(d, step=step)
+        wandb.log(d)
+
+        if 'train_episode_reward' in d:
+            with open('train_episode_reward.csv','a') as f:
+                if d['train_episode_length'] < 200:
+                    success = 1
+                else:
+                    success = 0
+                f.write(str(d['train_episode_reward'])+','+str(success)+'\n')
 
     def log_videos(self, vids, name, step=None):
         """Logs videos to WandB in mp4 format.

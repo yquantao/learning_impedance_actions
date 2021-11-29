@@ -9,11 +9,12 @@ from spirl.rl.utils.reward_fcns import sparse_threshold
 
 class Sampler:
     """Collects rollouts from the environment using the given agent."""
-    def __init__(self, config, env, agent, logger, max_episode_len):
+    def __init__(self, config, env, agent, agent_prior, logger, max_episode_len):
         self._hp = self._default_hparams().overwrite(config)
 
         self._env = env
         self._agent = agent
+        self._agent_prior = agent_prior
         self._logger = logger
         self._max_episode_len = max_episode_len
 
@@ -31,6 +32,9 @@ class Sampler:
 
     def sample_action(self, obs):
         return self._agent.act(obs)
+    
+    def sample_action_prior(self, obs):
+        return self._agent_prior.act(obs)
 
     def sample_batch(self, batch_size, is_train=True, global_step=None):
         """Samples an experience batch of the required size."""
@@ -119,6 +123,7 @@ class Sampler:
         self._episode_step, self._episode_reward = 0, 0.
         self._obs = self._postprocess_obs(self._reset_env())
         self._agent.reset()
+        self._agent_prior.reset()
 
     def _reset_env(self):
         return self._env.reset()
@@ -150,9 +155,19 @@ class HierarchicalSampler(Sampler):
                     while hl_step < batch_size or len(ll_experience_batch) <= 1:
                         # perform one rollout step
                         agent_output = self.sample_action(self._obs)
+                        agent_prior_output = self.sample_action_prior(self._obs)
                         agent_output = self._postprocess_agent_output(agent_output)
+                        agent_prior_output = self._postprocess_agent_output(agent_prior_output)
                         obs, reward, done, info = self._env.step(agent_output.action)
                         obs = self._postprocess_obs(obs)
+                        # record actions
+                        with open('trajectories.csv','a') as f:
+                            f.write(str(agent_output["action"][0])+','
+                                    +str(agent_output["action"][1])+','
+                                    +str(agent_output["action"][2])+','
+                                    +str(agent_prior_output["action"][0])+','
+                                    +str(agent_prior_output["action"][1])+','
+                                    +str(agent_prior_output["action"][2])+'\n')
 
                         # update last step's 'observation_next' with HL action
                         if store_ll:

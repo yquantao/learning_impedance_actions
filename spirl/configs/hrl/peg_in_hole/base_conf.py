@@ -23,10 +23,10 @@ configuration = {
     'environment': PegInHoleEnv,
     'sampler': HierarchicalSampler,
     'data_dir': '.',
-    'num_epochs': 15,
-    'max_rollout_len': 280,
-    'n_steps_per_epoch': 100000,
-    'n_warmup_steps': 500,
+    'num_epochs': 20,
+    'max_rollout_len': 200,     # max RL rollout length for each episode
+    'n_steps_per_epoch': 1000,
+    'n_warmup_steps': 200,
 }
 configuration = AttrDict(configuration)
 
@@ -40,7 +40,7 @@ obs_norm_params = AttrDict(
 )
 
 base_agent_params = AttrDict(
-    batch_size=256,
+    batch_size=128,
     replay=UniformReplayBuffer,
     replay_params=replay_params,
     # obs_normalizer=Normalizer,
@@ -54,7 +54,7 @@ base_agent_params = AttrDict(
 ll_model_params = AttrDict(
     state_dim=data_spec.state_dim,
     action_dim=data_spec.n_actions,
-    kl_div_weight=5e-4,
+    kl_div_weight=5e-5,
     nz_enc=128,
     nz_mid=128,
     n_processing_layers=5,
@@ -87,7 +87,7 @@ hl_critic_params = AttrDict(
     action_dim=hl_policy_params.action_dim,
     input_dim=hl_policy_params.input_dim,
     output_dim=1,
-    n_layers=5,  # number of policy network laye
+    n_layers=5,  # number of policy network layer
     nz_mid=256,
     action_input=True,
 )

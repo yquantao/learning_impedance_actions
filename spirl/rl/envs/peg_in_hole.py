@@ -17,12 +17,13 @@ from trajectory_msgs.msg import *
 from geometry_msgs.msg import *
 from panda_insertion.msg import *
 import time
+import csv
 
 class PegInHoleEnv(BaseEnvironment, gym.Env):
     """Tiny wrapper for Peg-In-Hole tasks."""
     def __init__(self, config):
         self._hp = self._default_hparams().overwrite(config)
-        self.goal = np.array([0.15, 0.32, 0.04])
+        self.goal = np.array([0.153, 0.295, 0.035])
         
         self.action_space = spaces.Box(np.array([-1]*8),np.array([1]*8)) # [x, y, z, theta_z, stifness k_x, k_y, k_z, k_theta_z]
         self.observation_space = spaces.Box(np.array([-5.0]*22),np.array([5.0]*22)) # [7 joint positions, 7 joint velocities, 7 cartesian pose, contact force]
@@ -71,21 +72,22 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
         return self._wrap_observation(self.obs)
 
     def reset(self):
-        print("***reset function***")
-
         # move to initial pose
-        time.sleep(1.0)
         desired_stiffness = TwistStamped()
         desired_stiffness.twist.linear.x = 400
         desired_stiffness.twist.linear.y = 400
-        desired_stiffness.twist.linear.z = 400
+        desired_stiffness.twist.linear.z = 200
         desired_stiffness.twist.angular.x = 60
         desired_stiffness.twist.angular.y = 60
         desired_stiffness.twist.angular.z = 60
+        self.desired_stifffness_pub.publish(desired_stiffness)
+
+        # record variable stiffness for x,y,z,theta_z
+        with open('variable_stiffness.csv','a') as f:
+            f.write(str(400)+','+str(400)+','+str(200)+','+str(60)+'\n')
 
         start_point = self.translation
-        step_size = 0.1/100
-
+        step_size = 0.06/100
         for i in range(100):
             reset_pose = PoseStamped()
             reset_pose.header.frame_id = "panda_link0"
@@ -98,14 +100,14 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
             reset_pose.pose.orientation.w = 0.00678687
 
             self.equilibrium_pose_pub.publish(reset_pose)
-            self.desired_stifffness_pub.publish(desired_stiffness)
+            #self.desired_stifffness_pub.publish(desired_stiffness)
         time.sleep(1.0)
 
         start_point = self.translation
-        step_x = (0.275-self.translation[0][0])/200
-        step_y = (0.170-self.translation[0][1])/200
-        step_z = (0.289-self.translation[0][2])/200
-        for i in range(200):
+        step_x = (0.200-self.translation[0][0])/100
+        step_y = (0.220-self.translation[0][1])/100
+        step_z = (0.180-self.translation[0][2])/100
+        for i in range(100):
             reset_pose = PoseStamped()
             reset_pose.header.frame_id = "panda_link0"
             reset_pose.pose.position.x = start_point[0][0]+i*step_x
@@ -117,8 +119,8 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
             reset_pose.pose.orientation.w = 0.00678687
 
             self.equilibrium_pose_pub.publish(reset_pose)
-            self.desired_stifffness_pub.publish(desired_stiffness)
-        time.sleep(0.1)
+            #self.desired_stifffness_pub.publish(desired_stiffness)
+        time.sleep(2.0)
 
         while not self.update_obs:
             self.rate.sleep()
@@ -143,18 +145,16 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
 
         # desired stiffness
         desired_stiffness = TwistStamped()
-        desired_stiffness.twist.linear.x = action[4]
-        desired_stiffness.twist.linear.y = action[5]
-        desired_stiffness.twist.linear.z = action[6]
+        desired_stiffness.twist.linear.x = action[4]*1000.0
+        desired_stiffness.twist.linear.y = action[5]*1000.0
+        desired_stiffness.twist.linear.z = action[6]*1000.0
         desired_stiffness.twist.angular.x = 60
         desired_stiffness.twist.angular.y = 60
-        desired_stiffness.twist.angular.z = action[7]
+        desired_stiffness.twist.angular.z = action[7]*100.0
 
         # publish action messages
-        print(equilibrium_pose)
         self.equilibrium_pose_pub.publish(equilibrium_pose)
         self.desired_stifffness_pub.publish(desired_stiffness)
-        time.sleep(2.0)
 
         # wait for next obs
         self.update_obs = False
@@ -162,8 +162,15 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
             self.rate.sleep()
 
         self.reward, done = self.calculate_reward()
-        print("reward: ", self.reward)
         info = {}
+
+        # record variable stiffness for x,y,z,theta_z
+        with open('variable_stiffness.csv','a') as f:
+            f.write(str(action[4]*1000.0)+','
+                    +str(action[5]*1000.0)+','
+                    +str(action[6]*1000.0)+','
+                    +str(action[7]*100.0)+','
+                    +str(done)+'\n')
 
         return self._wrap_observation(self.obs), self.reward, np.array(done), info
 
@@ -174,8 +181,11 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
         self.theta_z = np.array(msg.theta_z).reshape(1,-1)
         self.f_ext = np.array(msg.f_ext).reshape(1,-1)
 
+        # monitor contact wrench
+        with open('wrench.csv','a') as f:
+            f.write(str(self.f_ext[0,0])+'\n')
+
         # next observation
-        #self.obs = np.array(msg)
         obs = np.concatenate([self.q, self.dq, self.translation, self.theta_z, self.f_ext], axis=1)
         self.obs = obs.reshape(-1)
         self.update_obs = True
@@ -185,17 +195,23 @@ class PegInHoleEnv(BaseEnvironment, gym.Env):
         reward = 0
         done = False
         dist = np.linalg.norm(self.translation[0:3]-self.goal)
-        dist = np.abs(self.translation[0][2]-self.goal[2])
+        #dist = np.abs(self.translation[0][2]-self.goal[2])
 
         if mode == 0:
+            # try different functions to accelerate reward accumulation
             reward = -dist
-            if dist < 0.01 and self.translation[2] < 0.045:
-                reward = 1.0
+            #reward = np.exp(1/dist)
+            #reward = -np.log(dist)
+            if self.translation[0,2] < 0.045:
+                reward = 10.0
                 done = True
         elif mode == 1:
-            if dist < 0.01 and self.translation[2] < 0.045:
+            if dist < 0.01 and self.translation[0,2] < 0.045:
                 reward = 1.0
                 done = True
+        
+        #with open('rewards.csv','a') as f:
+        #    f.write(str(reward)+'\n')
 
         return reward, done
     

@@ -2,6 +2,7 @@ import os
 
 from spirl.models.skill_prior_mdl import SkillPriorMdl
 from spirl.components.logger import Logger
+from spirl.models.skill_prior_mdl import SkillSpaceLogger
 from spirl.utils.general_utils import AttrDict
 from spirl.configs.default_data_configs.kitchen import data_spec
 from spirl.components.evaluator import TopOfNSequenceEvaluator
@@ -11,7 +12,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 configuration = {
     'model': SkillPriorMdl,
-    'logger': Logger,
+    'logger': SkillSpaceLogger,
     'data_dir': '.',
     'epoch_cycles_train': 10,
     'evaluator': TopOfNSequenceEvaluator,

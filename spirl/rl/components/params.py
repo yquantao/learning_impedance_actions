@@ -12,7 +12,7 @@ def get_args():
                         help="if True, nothing is saved to disk. Note: this doesn't work")  # TODO this doesn't work
 
     # Running protocol
-    parser.add_argument('--resume', default='', type=str, metavar='PATH',
+    parser.add_argument('--resume', default='latest', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
     parser.add_argument('--mode', default='train', type=str,
                         choices=['train', 'val', 'rollout'],

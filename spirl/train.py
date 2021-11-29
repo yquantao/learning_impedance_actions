@@ -83,7 +83,7 @@ class ModelTrainer(BaseTrainer):
             'data_dir': None,  # directory where dataset is in
             'batch_size': 128,
             'exp_path': None,  # Path to the folder with experiments
-            'num_epochs': 200,
+            'num_epochs': 300,
             'epoch_cycles_train': 1,
             'optimizer': 'radam',    # supported: 'adam', 'radam', 'rmsprop', 'sgd'
             'lr': 1e-3,
@@ -134,6 +134,9 @@ class ModelTrainer(BaseTrainer):
                 losses = self.model.loss(output, inputs)
                 losses.total.value.backward()
                 self.call_hooks(inputs, output, losses, epoch)
+                    
+                # plot trajectory to analyze latent space
+                #self.logger.plot_trajectory(inputs, output)
 
                 self.optimizer.step()
                 self.model.step()
@@ -185,10 +188,6 @@ class ModelTrainer(BaseTrainer):
                     # run non-val-mode model (inference) to check overfitting
                     output = self.model_test(inputs)
                     losses = self.model_test.loss(output, inputs)
-
-                    # plot trajectory to analyze latent space
-                    #self.logger.visualize(output, inputs, losses_meter.avg, self.global_step, 'val', self.logger)
-                    #self.logger.plot_trajectory(inputs, output)
 
                     losses_meter.update(losses)
                     del losses
